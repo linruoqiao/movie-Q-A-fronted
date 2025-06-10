@@ -127,7 +127,7 @@ function toggle() {
     flex-shrink: 0;
     margin-top: 4px;
     color: #fff;
-    background-color: #165dff;
+    background-color: #0D0D15;
     border-radius: 6px;
   }
 

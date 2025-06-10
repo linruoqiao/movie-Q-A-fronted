@@ -1,8 +1,22 @@
 @forward 'element-plus/theme-chalk/src/common/var.scss' with (
   $colors: (
     'primary': (
-      'base': #80752c
-    )
+      'base': #0D0D15,
+      'light-3': #0D0D15,
+      'light-5': #0D0D15
+    ),
+    // 'film': (
+    //   'silver': #C0C0C0,       // 胶片银
+    //   'silver-dark': #A0A0A0   // 深色变体
+    // ),
+    // 'gold': (
+    //   'hollywood': #E4B722,    // 好莱坞金
+    //   'oscar': #FFD700         // 标准金
+    // ),
+    // 'accent': (
+    //   'neon-purple': #9D00FF,  // 霓虹紫
+    //   'neon-blue': #00F5FF     // 霓虹蓝（科幻用）
+    // )
   ),
   $header: (
     'height': 60px

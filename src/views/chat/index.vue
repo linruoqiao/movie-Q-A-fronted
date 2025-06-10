@@ -286,11 +286,13 @@ function scrollToButtom(div: Element | null) {
 
 <template>
   <div class="chat-container">
+
     <div class="chat-header">
       <el-tooltip class="box-item" :content="chatTitle" placement="bottom">
         <span class="title">{{ chatTitle }}</span>
       </el-tooltip>
     </div>
+
 
     <div ref="chatMainRef" class="chat-main">
       <div class="chat-content">
@@ -376,13 +378,14 @@ function scrollToButtom(div: Element | null) {
 
 <style lang="scss" scoped>
 .chat-container {
+  // margin-top: 10px;
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to bottom right, #fff9f6, 60%, #ebded3);
+  background: linear-gradient(to bottom right, #f2f5f5, 60%, #f3f2f2);
 
   .chat-header {
     display: flex;
@@ -446,7 +449,7 @@ function scrollToButtom(div: Element | null) {
           box-sizing: border-box;
           width: 100%;
           padding: 20px;
-          background-color: #f4e9db;
+          background-color: #e7e7e7;
           border-radius: 26px 26px 0 0;
           box-shadow: rgb(0 0 0 / 18%) 4px 14px 24px 14px;
 

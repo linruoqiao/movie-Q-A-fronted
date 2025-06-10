@@ -167,6 +167,7 @@ const onOk = () => {
     <div class="card table-card">
       <div style="margin-bottom: 10px">
         <el-button type="primary" @click="onAdd">添加</el-button>
+        <el-button type="primary" @click="onAddUrl">输入url</el-button>
         <el-button :disabled="tableDataList.length === 0" @click="onVectorClick()">向量化文档</el-button>
       </div>
 

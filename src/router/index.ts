@@ -9,6 +9,15 @@ const router = createRouter({
       redirect: '/chat'
     },
     {
+      path: '/home', // 单独的 Home 页面，不放在 children 里
+      name: 'Home',
+      meta: {
+        title: '首页',
+        icon: 'House'
+      },
+      component: () => import('@/views/home/index.vue') // 确保这个文件存在
+    },
+    {
       path: '/',
       component: LayoutClassic,
       children: [
@@ -26,20 +35,29 @@ const router = createRouter({
           path: '/documents',
           name: 'Documents',
           meta: {
-            title: '文档管理',
+            title: '知识库',
             icon: 'FolderOpened'
           },
           component: () => import('@/views/documents/index.vue')
         },
-        {
-          path: '/md-preview',
-          name: 'MdPreview',
-          meta: {
-            title: 'md主题预览',
-            icon: 'Tickets'
-          },
-          component: () => import('@/views/test/index.vue')
-        }
+        // {
+        //   path:'/home',
+        //   name:'Home',
+        //   meta:{
+        //     title:'首页',
+        //     icon:'House'
+        //   },
+        //   component: () => import('@/views/home/index.vue')
+        // }
+        // {
+        //   path: '/md-preview',
+        //   name: 'MdPreview',
+        //   meta: {
+        //     title: 'md主题预览',
+        //     icon: 'Tickets'
+        //   },
+        //   component: () => import('@/views/test/index.vue')
+        // }
       ]
     }
   ]

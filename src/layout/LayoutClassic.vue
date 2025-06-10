@@ -10,6 +10,32 @@ import LayoutFooter from './components/base/LayoutFooter.vue'
       <LayoutHeader></LayoutHeader>
     </el-header>
 
+    <!-- <div class="send-controls-extra">
+      <el-button-group>
+        <el-popover
+          :popper-style="{ borderRadius: '26px' }"
+          :visible="historyVisible"
+          placement="top-end"
+          :width="350"
+          trigger="click"
+          :persistent="false"
+        >
+          <template #reference>
+            <el-button round @click="historyVisible = !historyVisible">历史对话</el-button>
+          </template>
+          <ChatHistory
+            v-model:visible="historyVisible"
+            v-model:active-id="chatSessionId"
+            @item-click="onHistoryItemClick"
+            @rename="onHistoryItemRename"
+            @delete="onHistoryItemDelete"
+          />
+        </el-popover>
+
+        <el-button round type="primary" @click="onRestartNewChat">新对话</el-button>
+      </el-button-group>
+    </div> -->
+
     <el-container class="layout-body">
       <el-aside>
         <LayoutAside></LayoutAside>
@@ -24,12 +50,14 @@ import LayoutFooter from './components/base/LayoutFooter.vue'
               </keep-alive>
             </router-view>
           </div>
+          
           <LayoutFooter class="el-footer" />
         </el-scrollbar>
         <el-backtop target=".layout-scrollbar .el-scrollbar__wrap" :right="50" :bottom="60" />
       </el-main>
     </el-container>
   </el-container>
+  
 </template>
 
 <style lang="scss" scoped>
