@@ -282,55 +282,101 @@ function scrollToButtom(div: Element | null) {
     div.scrollTop = div.scrollHeight
   })
 }
-const handleImageUpload = (file) => {
+const handleImageUpload = async (file) => {
   // 1. 校验文件类型（只允许图片）
   const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
   if (!allowedTypes.includes(file.raw.type)) {
-    console.error('仅支持 JPG/PNG/GIF/WEBP 格式的图片');
-    alert('仅支持 JPG/PNG/GIF/WEBP 格式的图片');
-    return false;
+    const errorMsg = '仅支持 JPG/PNG/GIF/WEBP 格式的图片';
+    console.error(errorMsg);
+    alert(errorMsg);
+    return { success: false, error: errorMsg };
   }
 
   // 2. 校验文件大小（限制 5MB）
   const maxSize = 5 * 1024 * 1024; // 5MB
   if (file.size > maxSize) {
-    console.error('图片大小不能超过 5MB');
-    alert('图片大小不能超过 5MB');
-    return false;
+    const errorMsg = '图片大小不能超过 5MB';
+    console.error(errorMsg);
+    alert(errorMsg);
+    return { success: false, error: errorMsg };
   }
 
-  // 3. 直接传输文件（不进行Base64编码）
+  // 3. 准备FormData（注意字段名与后端一致）
   const formData = new FormData();
-  formData.append('files', file); // 直接添加文件对象
+  formData.append('files', file.raw); // 关键：字段名必须是'files'（后端接收List[UploadFile]）
 
-  // 显示上传进度
+  // 调试：打印FormData内容
+  console.log('=== 请求数据 ===');
+  for (let [key, value] of formData.entries()) {
+    console.log(key, value);
+  }
+
+  // 4. 显示上传进度
   console.log('开始上传...');
   const progressText = document.createElement('div');
   progressText.textContent = '上传中... 0%';
   document.body.appendChild(progressText);
 
-  axios.post('http://localhost:8082/analysis_image', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data', // 必须保留这个Content-Type
-    },
-    onUploadProgress: (progressEvent) => {
-      const percent = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-      progressText.textContent = `上传中... ${percent}%`;
-    },
-  })
-    .then((response) => {
-      console.log('上传成功:', response.data);
-      progressText.textContent = '上传成功！';
-      setTimeout(() => progressText.remove(), 2000);
-    })
-    .catch((error) => {
-      console.error('上传失败:', error);
-      progressText.textContent = '上传失败: ' + error.message;
-      setTimeout(() => progressText.remove(), 3000);
+  try {
+    // 5. 发送请求
+    const response = await axios.post('http://localhost:8082/analysis_image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: (progressEvent) => {
+        const percent = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+        progressText.textContent = `上传中... ${percent}%`;
+      },
     });
 
-  return true;
+    // 6. 处理成功响应
+    console.log('=== 响应数据 ===', response.data);
+    progressText.textContent = '上传成功！';
+    setTimeout(() => progressText.remove(), 2000);
+
+    // 7. 返回后端处理结果
+    if (response.data.code === 200) {
+      console.log('分析结果:', response.data.result);
+      return { 
+        success: true, 
+        data: response.data.result,
+        fullResponse: response.data 
+      };
+    } else {
+      throw new Error(response.data.message || '未知错误');
+    }
+
+  } catch (error) {
+    // 8. 处理错误
+    let errorMsg = '上传失败';
+    if (error.response) {
+      // 服务器返回的错误
+      console.error('服务器错误:', error.response.data);
+      errorMsg = error.response.data.detail || error.response.data.message;
+    } else if (error.request) {
+      // 请求已发出但无响应
+      console.error('无响应:', error.request);
+      errorMsg = '服务器无响应';
+    } else {
+      // 其他错误
+      console.error('请求错误:', error.message);
+      errorMsg = error.message;
+    }
+
+    progressText.textContent = errorMsg;
+    setTimeout(() => progressText.remove(), 3000);
+    return { success: false, error: errorMsg };
+  }
 };
+
+// 使用示例
+// const uploadResult = await handleImageUpload(file);
+// if (uploadResult.success) {
+//   console.log('最终分析结果:', uploadResult.data);
+//   // 在这里处理分析结果（如显示到页面）
+// } else {
+//   console.error('上传失败:', uploadResult.error);
+// }
 </script>
 
 <template>
