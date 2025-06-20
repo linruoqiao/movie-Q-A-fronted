@@ -4,7 +4,7 @@ import type { ChatSessionResponseType } from '@/api/chatSession/types'
 import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { chatApi, chatCancelRequest, chatHistoryApi } from '@/api/chat'
 import { chatSessionsAddApi } from '@/api/chatSession'
-
+import axios from 'axios';
 import HumanChat from './components/HumanChat.vue'
 import AssistantChat from './components/AssistantChat.vue'
 import ChatHistory from './components/ChatHistory.vue'
@@ -282,6 +282,55 @@ function scrollToButtom(div: Element | null) {
     div.scrollTop = div.scrollHeight
   })
 }
+const handleImageUpload = (file) => {
+  // 1. 校验文件类型（只允许图片）
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  if (!allowedTypes.includes(file.raw.type)) {
+    console.error('仅支持 JPG/PNG/GIF/WEBP 格式的图片');
+    alert('仅支持 JPG/PNG/GIF/WEBP 格式的图片');
+    return false;
+  }
+
+  // 2. 校验文件大小（限制 5MB）
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  if (file.size > maxSize) {
+    console.error('图片大小不能超过 5MB');
+    alert('图片大小不能超过 5MB');
+    return false;
+  }
+
+  // 3. 直接传输文件（不进行Base64编码）
+  const formData = new FormData();
+  formData.append('files', file); // 直接添加文件对象
+
+  // 显示上传进度
+  console.log('开始上传...');
+  const progressText = document.createElement('div');
+  progressText.textContent = '上传中... 0%';
+  document.body.appendChild(progressText);
+
+  axios.post('http://localhost:8082/analysis_image', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data', // 必须保留这个Content-Type
+    },
+    onUploadProgress: (progressEvent) => {
+      const percent = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+      progressText.textContent = `上传中... ${percent}%`;
+    },
+  })
+    .then((response) => {
+      console.log('上传成功:', response.data);
+      progressText.textContent = '上传成功！';
+      setTimeout(() => progressText.remove(), 2000);
+    })
+    .catch((error) => {
+      console.error('上传失败:', error);
+      progressText.textContent = '上传失败: ' + error.message;
+      setTimeout(() => progressText.remove(), 3000);
+    });
+
+  return true;
+};
 </script>
 
 <template>
@@ -316,6 +365,8 @@ function scrollToButtom(div: Element | null) {
           <div class="chat-loading" v-if="loading">
             <ChatLoading></ChatLoading>
           </div>
+          
+
           <div class="input-card">
             <el-input
               v-model="humanInput"
@@ -330,7 +381,20 @@ function scrollToButtom(div: Element | null) {
               placeholder="请输入对话内容……"
             >
             </el-input>
-
+            <div class="bottom-send-image">
+              <!-- 上传图片按钮 -->
+              <el-upload
+                action=""
+                :show-file-list="false"
+                :auto-upload="false"
+                :on-change="handleImageUpload"
+                class="upload-btn"
+              >
+                <el-button type="primary" plain round>
+                  <img src="../../assets/camera.png" alt="上传图片" class="upload-icon" />
+                </el-button>
+              </el-upload>
+            </div>
             <div class="bottom-send">
               <el-button v-if="isStream" type="primary" plain round @click="onCancelRequest">
                 <StopIcon size="20px" />
@@ -472,6 +536,26 @@ function scrollToButtom(div: Element | null) {
               &:read-only {
                 box-shadow: none;
               }
+              // /* 上传按钮样式 */
+              // .upload-btn {
+              //   margin-right: 10px;
+              // }
+
+              // .upload-icon {
+              //   width: 16px;
+              //   height: 16px;
+              //   vertical-align: middle;
+              // }
+
+              // /* 底部按钮容器调整 */
+              // .bottom-send-image {
+              //   width: 24px;
+              //   height: 24px;
+              //   display: flex;
+              //   align-items: center;
+              //   margin-top: 10px;
+              //   margin-right: 30px;
+              // }
             }
             /* stylelint-disable-next-line selector-class-pattern */
             :deep(.el-input__count) {
@@ -492,7 +576,19 @@ function scrollToButtom(div: Element | null) {
               margin-left: 10px;
             }
           }
+          .bottom-send-image {
+            position: absolute;
+            right: 90px;
+            bottom: 83px;
+            display: flex;
+            align-items: center;
+            font-size: var(--el-font-size-small);
+            color: var(--el-text-color-placeholder);
 
+            .el-button {
+              margin-left: 10px;
+            }
+          }
           .chat-send-bottom-controls {
             position: relative;
             display: flex;
@@ -512,4 +608,5 @@ function scrollToButtom(div: Element | null) {
     }
   }
 }
+
 </style>
