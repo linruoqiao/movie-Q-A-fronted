@@ -4,11 +4,15 @@ import { onMounted, ref, reactive, toRaw, markRaw } from 'vue'
 import { docPageApi, docDeleteApi, docVectorAllApi } from '@/api/documents'
 import type { DocParamsType, DocTableType } from '@/api/documents/types'
 import writeForm from './writeForm.vue'
+import urlWriteForm from './urlWriteFrom.vue'
 
 const loading = ref(false)
 const tableLoadText = ref('加载中……')
 /** 添加/编辑弹窗表单 */
 const dialog = reactive({
+  writeFormVisible: false
+})
+const dialogUrl=reactive({
   writeFormVisible: false
 })
 const searchForm = reactive({
@@ -23,6 +27,7 @@ const tableDataList = ref<DocTableType[]>([])
 
 // 选中当前行数据
 let currentRow: DocTableType | null = null
+let currentRowUrl: DocTableType | null = null
 
 onMounted(() => {
   // 页面加载完成时就调用获取一次table数据
@@ -71,11 +76,15 @@ const onAdd = () => {
   dialog.writeFormVisible = true
   currentRow = null
 }
-
+const onAddUrl = () => {
+  dialogUrl.writeFormVisible = true
+  currentRowUrl = null
+}
 const onEdit = (index: number, row: DocTableType) => {
   dialog.writeFormVisible = true
   currentRow = toRaw(row)
 }
+
 
 const onDeleteRow = async (index: number, row: DocTableType) => {
   loading.value = true
@@ -228,6 +237,13 @@ const onOk = () => {
       :current-row="currentRow"
       @ok="onOk"
       @closed="closed => (dialog.writeFormVisible = closed)"
+    />
+    <url-write-form
+      v-if="dialogUrl.writeFormVisible"
+      :open="dialogUrl.writeFormVisible"
+      :current-row="currentRowUrl"
+      @ok="onOk"
+      @closed="closed => (dialogUrl.writeFormVisible = closed)"
     />
   </div>
 </template>
