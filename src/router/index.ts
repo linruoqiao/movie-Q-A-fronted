@@ -40,6 +40,15 @@ const router = createRouter({
           },
           component: () => import('@/views/documents/index.vue')
         },
+        {
+          path: '/kg',
+          name: 'KnowledgeGraph',
+          meta: {
+            title: 'KG 可视化',
+            icon: 'Connection'
+          },
+          component: () => import('@/views/kg/index.vue') // 请确保该文件存在          
+        }
         // {
         //   path:'/home',
         //   name:'Home',
