@@ -47,7 +47,7 @@ const rules = reactive<FormRules<DocTableType>>({
   name: [{ required: true, message: '请输入文档名称！', trigger: 'blur' }],
   file_path: [
     { required: true, message: '请输入文件URL！', trigger: 'blur' },
-    { 
+    {
       type: 'url',
       message: '请输入有效的URL地址',
       trigger: ['blur', 'change']
@@ -60,7 +60,7 @@ const rules = reactive<FormRules<DocTableType>>({
  */
 const submitApi = async () => {
   loading.value = true
-  
+
   try {
     // 构造请求数据
     const requestData = {
@@ -69,12 +69,12 @@ const submitApi = async () => {
     }
 
     // 使用axios直接调用接口
-    const response = await axios.post('/url_to_text', requestData, {
+    const response = await axios.post('/api/documents/url_to_text', requestData, {
       headers: {
         'Content-Type': 'application/json'
       }
     })
-    
+
     // 处理响应
     if (response.data.success) {
       emit('ok', response.data.data) // 传递后端返回的数据
@@ -86,8 +86,8 @@ const submitApi = async () => {
   } catch (error: any) {
     console.error('提交URL文档失败:', error)
     // 更详细的错误处理
-    const errorMessage = error.response?.data?.message || 
-                        error.message || 
+    const errorMessage = error.response?.data?.message ||
+                        error.message ||
                         '提交URL文档失败，请稍后重试'
     ElMessage.error(errorMessage)
   } finally {
@@ -131,8 +131,8 @@ const onClosed = () => {
         <el-input v-model="docForm.name" placeholder="请输入文档名称" />
       </el-form-item>
       <el-form-item label="文件URL" prop="file_path">
-        <el-input 
-          v-model="docForm.file_path" 
+        <el-input
+          v-model="docForm.file_path"
           placeholder="请输入文件URL地址"
           clearable
         >
@@ -153,7 +153,7 @@ const onClosed = () => {
 <style lang="scss" scoped>
 .el-form {
   margin-right: 80px;
-  
+
   :deep(.el-input-group__append) {
     padding: 0 10px;
   }
