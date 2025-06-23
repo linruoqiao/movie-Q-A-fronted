@@ -98,12 +98,13 @@ const onSubmit = async () => {
 /**
  * 开始对话，流式响应
  */
+
 function startChatting() {
   disabled.value = true
   loading.value = true
   isWheelMove.value = false
   scrollToButtom(chatMainRef.value!)
-
+  
   const userChat = ref<Chat>({
     role: 'user',
     content: humanInput.value,
@@ -116,13 +117,22 @@ function startChatting() {
     isStream: false,
     error: false
   })
+  let enhancedPrompt = humanInput.value;
+  
+  if (imageAnalysisResults.length > 0) {
+    const imageContext = imageAnalysisResults.map(img => {
+      return `[相关图像分析结果：${img.analysis}]`;
+    }).join('\n');
+    
+    enhancedPrompt = `${imageContext}\n${humanInput.value}`;
+  }
 
   // 请求参数
   const data = {
     model: 'deepseek-r1:7b',
     messages: {
       role: userChat.value.role,
-      content: userChat.value.content
+      content: enhancedPrompt
     },
     chat_session_id: chatSessionId.value,
     stream: true
@@ -282,6 +292,16 @@ function scrollToButtom(div: Element | null) {
     div.scrollTop = div.scrollHeight
   })
 }
+const uploadedImages = ref([])
+const clearAllImages = () => {
+  uploadedImages.value = []
+}
+
+// 移除单张图片
+const removeImage = (index) => {
+  uploadedImages.value.splice(index, 1)
+}
+let imageAnalysisResults = [];
 const handleImageUpload = async (file) => {
   // 1. 校验文件类型（只允许图片）
   const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -376,9 +396,32 @@ const modelOptions = [
   { value: 'deepseek', label: 'GLM-4-Flash' }
 ];
 
-const handleModelChange = (value) => {
+const handleModelChange = async (value) => {
   console.log('切换模型:', value);
-  // 这里可以添加切换模型的逻辑，比如调用API或更新store
+  
+  try {
+    // 调用后端接口切换模型
+    const response = await axios.post(
+      'http://localhost:8082/changemodel',
+      { model: value }, // POST请求数据体
+      {
+        headers: {
+          'Content-Type': 'application/json' // 设置JSON请求头
+        }
+      }
+    );
+
+    // 处理成功响应
+    if (response.status === 200) {
+      console.log('模型切换成功:', response.data.message);
+      // 这里可以添加成功切换后的逻辑，例如更新UI状态
+    } else {
+      console.warn('模型切换失败:', response.data.error);
+    }
+  } catch (error) {
+    // 处理错误
+    console.error('模型切换接口调用失败:', error);
+  }
 };
 </script>
 
@@ -394,6 +437,40 @@ const handleModelChange = (value) => {
 
     <div ref="chatMainRef" class="chat-main">
       <div class="chat-content">
+        <div class="image-preview-area" v-if="uploadedImages.length > 0">
+          <div class="image-preview-header">
+            <span>已上传图片</span>
+            <el-button 
+              size="small" 
+              type="danger" 
+              plain 
+              @click="clearAllImages"
+            >
+              清除所有
+            </el-button>
+          </div>
+          <div class="image-preview-list">
+            <div 
+              v-for="(image, index) in uploadedImages" 
+              :key="index" 
+              class="image-preview-item"
+            >
+              <img :src="image.url" :alt="'上传图片-' + index">
+              <div class="image-actions">
+                <el-button 
+                  circle 
+                  size="small" 
+                  @click="removeImage(index)"
+                >
+                  <el-icon><Close /></el-icon>
+                </el-button>
+              </div>
+              <div class="image-analysis" v-if="image.analysis">
+                {{ image.analysis }}
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="chat">
           <AssistantChat key="system" :content="'您好！我是贴心的小助手，有什么可以帮助您的吗？'"></AssistantChat>
           <template v-for="(item, index) in chatting">
@@ -749,5 +826,61 @@ const handleModelChange = (value) => {
     }
   }
 }
+.image-preview-area {
+  margin: 16px;
+  padding: 12px;
+  background-color: var(--el-bg-color);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
 
+.image-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--el-text-color-regular);
+}
+
+.image-preview-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.image-preview-item {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--el-border-color);
+}
+
+.image-preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-actions {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+
+.image-analysis {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 4px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 </style>

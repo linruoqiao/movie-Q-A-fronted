@@ -69,7 +69,7 @@ const submitApi = async () => {
     }
 
     // 使用axios直接调用接口
-    const response = await axios.post('/api/documents/url_to_text', requestData, {
+    const response = await axios.post('http://localhost:8082/url_to_text', requestData, {
       headers: {
         'Content-Type': 'application/json'
       }
