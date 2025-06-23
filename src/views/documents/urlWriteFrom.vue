@@ -76,7 +76,7 @@ const submitApi = async () => {
     })
 
     // 处理响应
-    if (response.data.success) {
+    if (response.data.code === 200) {
       emit('ok', response.data.data) // 传递后端返回的数据
       ElMessage.success('文档添加成功！')
       visible.value = false
